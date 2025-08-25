@@ -13,7 +13,7 @@ Esta guía te ayudará a desplegar la aplicación Alfa completa en una instancia
 ### 1. Crear Instancia EC2
 
 **Especificaciones Recomendadas:**
-- **AMI**: Ubuntu Server 22.04 LTS
+- **AMI**: Amazon Linux 2023
 - **Tipo de Instancia**: 
   - Desarrollo: `t3.medium` (2 vCPU, 4 GB RAM)
   - Producción: `t3.large` (2 vCPU, 8 GB RAM) o superior
@@ -57,38 +57,38 @@ ssh-keygen -t rsa -b 4096 -f ~/.ssh/alfa-ec2-key
 chmod 400 ~/.ssh/alfa-ec2-key.pem
 
 # Conectar via SSH
-ssh -i ~/.ssh/alfa-ec2-key.pem ubuntu@YOUR_EC2_PUBLIC_IP
+ssh -i ~/.ssh/alfa-ec2-key.pem ec2-user@YOUR_EC2_PUBLIC_IP
 ```
 
 ### 2. Actualizar el Sistema
 
 ```bash
 # Actualizar paquetes
-sudo apt update && sudo apt upgrade -y
+sudo dnf update -y
 
 # Instalar herramientas básicas
-sudo apt install -y curl wget git htop nano ufw
+sudo dnf install -y curl wget git htop nano firewalld
 ```
 
-### 3. Configurar Firewall (UFW)
+### 3. Configurar Firewall (firewalld)
 
 ```bash
-# Habilitar UFW
-sudo ufw enable
+# Habilitar firewalld
+sudo systemctl enable firewalld
+sudo systemctl start firewalld
 
 # Configurar reglas básicas
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
+sudo firewall-cmd --permanent --add-service=ssh
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --permanent --add-port=5000/tcp
+sudo firewall-cmd --permanent --add-port=9443/tcp
 
-# Permitir conexiones necesarias
-sudo ufw allow ssh
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 5000/tcp
-sudo ufw allow 9443/tcp
+# Aplicar cambios
+sudo firewall-cmd --reload
 
 # Verificar estado
-sudo ufw status
+sudo firewall-cmd --list-all
 ```
 
 ### 4. Instalar Docker y Docker Compose
@@ -124,7 +124,7 @@ git clone https://github.com/tu-usuario/Striker-dev.git
 cd Striker-dev
 
 # O subir archivos via SCP
-scp -i ~/.ssh/alfa-ec2-key.pem -r ./Striker-dev ubuntu@YOUR_EC2_PUBLIC_IP:~/
+scp -i ~/.ssh/alfa-ec2-key.pem -r ./Striker-dev ec2-user@YOUR_EC2_PUBLIC_IP:~/
 ```
 
 ### 2. Configurar Variables de Entorno
@@ -159,7 +159,7 @@ EMAIL=admin@tu-dominio.com
 
 ```bash
 # Instalar Certbot
-sudo apt install -y certbot
+sudo dnf install -y certbot
 
 # Obtener certificados (requiere dominio apuntando a la IP)
 sudo certbot certonly --standalone -d tu-dominio.com -d www.tu-dominio.com
@@ -342,7 +342,8 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-config-wizard
 
 ```bash
 # Instalar fail2ban
-sudo apt install -y fail2ban
+sudo dnf install -y epel-release
+sudo dnf install -y fail2ban
 
 # Configurar
 sudo systemctl enable fail2ban

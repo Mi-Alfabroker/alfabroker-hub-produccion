@@ -29,44 +29,45 @@ echo -e "${NC}"
 
 log "🔧 Iniciando configuración de EC2 para Alfa App..."
 
-# Verificar que estamos en Ubuntu
-if [ ! -f /etc/lsb-release ]; then
-    error "Este script está diseñado para Ubuntu. Usa otra distribución bajo tu propio riesgo."
+# Verificar que estamos en Amazon Linux
+if [ ! -f /etc/amazon-linux-release ] && [ ! -f /etc/system-release ]; then
+    error "Este script está diseñado para Amazon Linux 2023. Usa otra distribución bajo tu propio riesgo."
 fi
 
 # Actualizar sistema
 log "📦 Actualizando sistema..."
-sudo apt update && sudo apt upgrade -y
+sudo dnf update -y
 
 # Instalar herramientas básicas
 log "🛠️ Instalando herramientas básicas..."
-sudo apt install -y \
+sudo dnf install -y \
     curl \
     wget \
     git \
     htop \
     nano \
     vim \
-    ufw \
     unzip \
-    software-properties-common \
-    apt-transport-https \
-    ca-certificates \
-    gnupg \
-    lsb-release \
-    htpasswd \
-    openssl
+    tar \
+    gzip \
+    openssl \
+    httpd-tools \
+    firewalld \
+    cronie \
+    logrotate
 
-# Configurar firewall
-log "🔥 Configurando firewall UFW..."
-sudo ufw --force enable
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 5000/tcp
-sudo ufw allow 9443/tcp
+# Configurar firewall (firewalld en Amazon Linux)
+log "🔥 Configurando firewall firewalld..."
+sudo systemctl enable firewalld
+sudo systemctl start firewalld
+
+# Configurar zonas y puertos
+sudo firewall-cmd --permanent --add-service=ssh
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --permanent --add-port=5000/tcp
+sudo firewall-cmd --permanent --add-port=9443/tcp
+sudo firewall-cmd --reload
 
 info "✅ Firewall configurado correctamente"
 
@@ -96,8 +97,8 @@ fi
 # Instalar Node.js (para builds futuros)
 log "📦 Instalando Node.js..."
 if ! command -v node &> /dev/null; then
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+    sudo dnf install -y nodejs
     info "✅ Node.js $(node --version) instalado"
 else
     info "✅ Node.js ya está instalado: $(node --version)"
@@ -105,7 +106,8 @@ fi
 
 # Configurar fail2ban para seguridad SSH
 log "🔒 Configurando fail2ban..."
-sudo apt install -y fail2ban
+sudo dnf install -y epel-release
+sudo dnf install -y fail2ban
 sudo systemctl enable fail2ban
 sudo systemctl start fail2ban
 
@@ -233,9 +235,13 @@ info "✅ Monitoreo configurado (cada 5 minutos)"
 
 # Configurar actualizaciones automáticas de seguridad
 log "🔄 Configurando actualizaciones automáticas..."
-sudo apt install -y unattended-upgrades
-echo 'Unattended-Upgrade::Automatic-Reboot "false";' | sudo tee -a /etc/apt/apt.conf.d/50unattended-upgrades
-sudo dpkg-reconfigure -plow unattended-upgrades
+sudo dnf install -y dnf-automatic
+sudo systemctl enable dnf-automatic.timer
+sudo systemctl start dnf-automatic.timer
+
+# Configurar dnf-automatic para solo actualizaciones de seguridad
+sudo sed -i 's/upgrade_type = default/upgrade_type = security/' /etc/dnf/automatic.conf
+sudo sed -i 's/apply_updates = no/apply_updates = yes/' /etc/dnf/automatic.conf
 
 # Crear script de backup
 log "💾 Creando script de backup..."
@@ -243,7 +249,7 @@ tee ~/backup-alfa.sh > /dev/null << 'EOF'
 #!/bin/bash
 # Script de backup para Alfa App
 
-BACKUP_DIR="/home/ubuntu/backups"
+BACKUP_DIR="/home/ec2-user/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p "$BACKUP_DIR"
@@ -274,7 +280,7 @@ info "✅ Backup automático configurado (diario a las 2 AM)"
 
 # Instalar Certbot para SSL
 log "🔒 Instalando Certbot para SSL..."
-sudo apt install -y certbot
+sudo dnf install -y certbot
 info "✅ Certbot instalado (usar después con tu dominio)"
 
 # Configurar timezone
@@ -292,7 +298,7 @@ tee ~/system-info.txt > /dev/null << EOF
 - Usuario: $(whoami)
 - Hostname: $(hostname)
 - IP Pública: $(curl -s ifconfig.me)
-- Sistema: $(lsb_release -d | cut -f2)
+- Sistema: $(cat /etc/system-release)
 - Kernel: $(uname -r)
 
 ## Servicios Instalados
@@ -321,11 +327,12 @@ tee ~/system-info.txt > /dev/null << EOF
 4. Configurar Portainer
 
 ## Comandos Útiles
-- Ver estado UFW: sudo ufw status
+- Ver estado firewall: sudo firewall-cmd --list-all
 - Ver logs fail2ban: sudo fail2ban-client status sshd
 - Ver uso de recursos: htop
 - Ver contenedores: docker ps
 - Monitoreo en tiempo real: tail -f /var/log/alfa-monitor.log
+- Ver actualizaciones automáticas: sudo systemctl status dnf-automatic.timer
 EOF
 
 # Mostrar resumen final
@@ -342,11 +349,11 @@ info "📊 Monitoreo configurado: ~/monitor-alfa.sh"
 info "💾 Backup configurado: ~/backup-alfa.sh"
 echo ""
 warn "⚠️  IMPORTANTE: Reinicia la sesión SSH para aplicar cambios de grupo Docker"
-warn "⚠️  Comando: exit && ssh -i tu-key.pem ubuntu@$(curl -s ifconfig.me)"
+warn "⚠️  Comando: exit && ssh -i tu-key.pem ec2-user@$(curl -s ifconfig.me)"
 echo ""
 log "🚀 Próximos pasos:"
 echo "   1. Reiniciar sesión SSH"
-echo "   2. Subir código: scp -r ./Striker-dev ubuntu@IP:~/"
+echo "   2. Subir código: scp -r ./Striker-dev ec2-user@IP:~/"
 echo "   3. Ejecutar: cd Striker-dev && ./deploy.sh"
 echo "   4. Configurar dominio y SSL si es necesario"
 echo ""
@@ -356,9 +363,9 @@ echo ""
 # Mostrar información importante
 echo -e "${BLUE}🔑 Información Importante:${NC}"
 echo "   IP Pública: $(curl -s ifconfig.me)"
-echo "   Usuario SSH: ubuntu"
+echo "   Usuario SSH: ec2-user"
 echo "   Puertos abiertos: 22, 80, 443, 5000, 9443"
-echo "   Firewall: UFW habilitado"
+echo "   Firewall: firewalld habilitado"
 echo "   Fail2ban: Activo para SSH"
 echo "   Swap: 2GB configurado"
 echo "   Timezone: America/Bogota"

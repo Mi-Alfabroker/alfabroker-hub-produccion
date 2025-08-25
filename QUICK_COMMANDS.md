@@ -116,7 +116,7 @@ docker exec alfa-frontend curl -f http://alfa-api:5000/health
 
 # Ver puertos abiertos
 netstat -tlnp | grep -E '(80|443|5000|9443|3306)'
-sudo ufw status
+sudo firewall-cmd --list-all
 ```
 
 ## 🔒 Seguridad
@@ -171,8 +171,8 @@ cd ..
 # Aplicar cambios
 docker-compose up -d --build
 
-# Actualizar sistema (EC2)
-sudo apt update && sudo apt upgrade -y
+# Actualizar sistema (Amazon Linux 2023)
+sudo dnf update -y
 ```
 
 ## 📱 URLs Importantes
