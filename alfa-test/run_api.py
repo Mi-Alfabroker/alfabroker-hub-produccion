@@ -26,6 +26,7 @@ def check_mysql_connection():
         except Exception as e:
             retry_count += 1
             print(f"-----> Intento {retry_count}/{max_retries} - Esperando MySQL...")
+            print(f"-----> Error: {e}")
             if retry_count >= max_retries:
                 print(f"-----> Error: No se pudo conectar a MySQL después de {max_retries} intentos")
                 print("-----> Asegúrate de que MySQL esté corriendo:")
