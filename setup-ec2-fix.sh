@@ -145,7 +145,7 @@ fi
 
 # Configurar fail2ban
 log "🔒 Configurando fail2ban..."
-sudo dnf install -y epel-release
+# En Amazon Linux 2023, fail2ban está en los repositorios principales
 sudo dnf install -y fail2ban
 
 # Crear configuración
