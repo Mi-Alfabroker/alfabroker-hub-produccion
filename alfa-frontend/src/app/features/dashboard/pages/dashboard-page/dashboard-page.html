@@ -1,0 +1,127 @@
+<!-- Layout con Sidebar -->
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <app-sidebar 
+    [configuracion]="configuracionSidebar"
+    (elementoSeleccionado)="alSeleccionarElementoMenu($event)"
+    (cambioColapso)="alCambiarColapso($event)"
+    (cerrarSesion)="cerrarSesion()"
+  ></app-sidebar>
+
+  <!-- Contenido Principal -->
+  <main class="contenido-principal" [class.sidebar-colapsado]="configuracionSidebar?.colapsado">
+    <!-- Tarjeta de Bienvenida -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+      <div class="flex items-center space-x-4">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #33658A 0%, #2F4858 100%);">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </div>
+        
+        <div class="flex-1">
+          <h2 class="text-2xl font-bold text-gray-900" *ngIf="agenteActual">
+            ¡Bienvenido/a, {{ agenteActual.nombre }}!
+          </h2>
+          <p class="text-gray-600 mt-1">
+            Has iniciado sesión correctamente en Alfa Broker Hub. 
+            Desde aquí podrás gestionar pólizas, clientes y toda la información de seguros.
+          </p>
+        </div>
+
+        <!-- Badge de estado -->
+        <div class="flex flex-col items-end">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-green-800 bg-green-100">
+            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            Conectado
+          </span>
+          <span class="text-xs text-gray-500 mt-1" *ngIf="agenteActual">
+            ID: {{ agenteActual.id }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards de Funcionalidades (Próximamente) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Card 1: Pólizas -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color: #F6AE2D;">
+            <svg class="w-6 h-6" style="color: #2F4858;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Pólizas</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Gestiona las pólizas de seguros de tus clientes
+        </p>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-yellow-800 bg-yellow-100">
+          Próximamente
+        </span>
+      </div>
+
+      <!-- Card 2: Clientes -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color: #F6AE2D;">
+            <svg class="w-6 h-6" style="color: #2F4858;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Clientes</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Administra la información de tus clientes
+        </p>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-yellow-800 bg-yellow-100">
+          Próximamente
+        </span>
+      </div>
+
+      <!-- Card 3: Reportes -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color: #F6AE2D;">
+            <svg class="w-6 h-6" style="color: #2F4858;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Reportes</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-4">
+          Genera reportes y estadísticas de ventas
+        </p>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-yellow-800 bg-yellow-100">
+          Próximamente
+        </span>
+      </div>
+    </div>
+
+    <!-- Información de la Sesión -->
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4" *ngIf="agenteActual">
+      <h4 class="text-sm font-medium text-blue-900 mb-2">Información de la Sesión</h4>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div>
+          <span class="text-blue-600 font-medium">Usuario:</span>
+          <p class="text-blue-800">{{ agenteActual.usuario }}</p>
+        </div>
+        <div>
+          <span class="text-blue-600 font-medium">Email:</span>
+          <p class="text-blue-800">{{ agenteActual.correo }}</p>
+        </div>
+        <div>
+          <span class="text-blue-600 font-medium">Rol:</span>
+          <p class="text-blue-800">{{ agenteActual.rol | titlecase }}</p>
+        </div>
+        <div>
+          <span class="text-blue-600 font-medium">Estado:</span>
+          <p class="text-blue-800">{{ agenteActual.activo ? 'Activo' : 'Inactivo' }}</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

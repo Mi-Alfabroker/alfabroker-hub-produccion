@@ -1,0 +1,161 @@
+<div class="sidebar-container" [class.colapsado]="configuracion?.colapsado">
+  <!-- Header del Sidebar -->
+  <div class="sidebar-header">
+    <!-- Logo y Título -->
+    <div class="logo-container" [class.oculto]="configuracion?.colapsado">
+      <div class="logo-icono">
+        <span class="logo-texto">A</span>
+      </div>
+      <div class="titulo-container" *ngIf="!configuracion?.colapsado">
+        <h2 class="titulo-app">{{ configuracion?.tituloApp || 'Alfa Broker' }}</h2>
+        <p class="subtitulo-app" *ngIf="configuracion?.subtituloApp">{{ configuracion?.subtituloApp }}</p>
+      </div>
+    </div>
+
+    <!-- Botón de colapso -->
+    <button 
+      class="boton-colapso"
+      (click)="alternarColapso()"
+      [title]="configuracion?.colapsado ? 'Expandir menú' : 'Colapsar menú'"
+    >
+      <svg class="icono-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Contenido Principal del Menú -->
+  <div class="sidebar-content">
+    <!-- Búsqueda -->
+    <div class="busqueda-container" *ngIf="!configuracion?.colapsado">
+      <div class="input-busqueda">
+        <svg class="icono-busqueda" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input 
+          type="text" 
+          placeholder="Buscar..." 
+          class="campo-busqueda"
+        />
+      </div>
+    </div>
+
+    <!-- Grupos de Menú -->
+    <nav class="menu-navegacion">
+      <div class="grupo-menu" *ngFor="let grupo of configuracion?.grupos">
+        <!-- Título del grupo (solo si está expandido) -->
+        <h3 class="titulo-grupo" *ngIf="grupo.titulo && !configuracion?.colapsado">
+          {{ grupo.titulo }}
+        </h3>
+
+        <!-- Elementos del menú -->
+        <ul class="lista-elementos">
+          <li 
+            class="elemento-menu"
+            *ngFor="let elemento of grupo.elementos"
+            [class.activo]="esRutaActiva(elemento.ruta)"
+            [class.deshabilitado]="elemento.deshabilitado"
+          >
+            <button
+              class="boton-elemento"
+              (click)="alSeleccionarElemento(elemento)"
+              [disabled]="elemento.deshabilitado"
+              [title]="configuracion?.colapsado ? elemento.etiqueta : ''"
+            >
+              <!-- Ícono -->
+              <span class="icono-elemento" [innerHTML]="elemento.icono"></span>
+              
+              <!-- Etiqueta (solo si está expandido) -->
+              <span class="etiqueta-elemento" *ngIf="!configuracion?.colapsado">
+                {{ elemento.etiqueta }}
+              </span>
+
+              <!-- Badge (solo si está expandido) -->
+              <span 
+                class="badge-elemento"
+                *ngIf="elemento.badge && !configuracion?.colapsado"
+                [class]="'badge-' + (elemento.colorBadge || 'primary')"
+              >
+                {{ elemento.badge }}
+              </span>
+            </button>
+
+            <!-- Tooltip para modo colapsado -->
+            <div class="tooltip-elemento" *ngIf="configuracion?.colapsado">
+              {{ elemento.etiqueta }}
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Footer del Sidebar -->
+  <div class="sidebar-footer">
+    <!-- Elementos del footer (Notificaciones, Soporte, Configuración) -->
+    <div class="elementos-footer">
+      <!-- Notificaciones -->
+      <!-- <button class="boton-footer" [title]="configuracion?.colapsado ? 'Notificaciones' : ''">
+        <svg class="icono-footer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+        </svg>
+        <span class="etiqueta-footer" *ngIf="!configuracion?.colapsado">Notificaciones</span>
+        <span class="badge-notificacion">12</span>
+      </button> -->
+
+      <!-- Soporte -->
+      <!-- <button class="boton-footer" [title]="configuracion?.colapsado ? 'Soporte' : ''">
+        <svg class="icono-footer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+          <path d="M12 17h.01"></path>
+        </svg>
+        <span class="etiqueta-footer" *ngIf="!configuracion?.colapsado">Soporte</span>
+      </button> -->
+
+      <!-- Configuración -->
+      <button (click)="alCerrarSesion()" class="boton-footer" [title]="configuracion?.colapsado ? 'Configuración' : ''">
+        <svg class="icono-footer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <span class="etiqueta-footer" *ngIf="!configuracion?.colapsado">Cerrar sesión</span>
+      </button>
+    </div>
+
+    <!-- Información del Usuario -->
+    <div class="usuario-container" *ngIf="configuracion && configuracion.usuario">
+      <button class="boton-usuario">
+        <!-- Avatar -->
+        <div class="avatar-usuario">
+          <img 
+            *ngIf="configuracion.usuario.avatar" 
+            [src]="configuracion.usuario.avatar" 
+            [alt]="configuracion.usuario.nombre"
+            class="imagen-avatar"
+          />
+          <div *ngIf="!configuracion.usuario.avatar" class="avatar-placeholder">
+            {{ configuracion.usuario.nombre.charAt(0).toUpperCase() }}
+          </div>
+        </div>
+
+        <!-- Información del usuario (solo si está expandido) -->
+        <div class="info-usuario" *ngIf="!configuracion.colapsado">
+          <p class="nombre-usuario">{{ configuracion.usuario.nombre }}</p>
+          <p class="email-usuario">{{ configuracion.usuario.email }}</p>
+        </div>
+
+        <!-- Ícono de más opciones -->
+        <svg class="icono-opciones" *ngIf="!configuracion.colapsado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="1"></circle>
+          <circle cx="12" cy="5" r="1"></circle>
+          <circle cx="12" cy="19" r="1"></circle>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

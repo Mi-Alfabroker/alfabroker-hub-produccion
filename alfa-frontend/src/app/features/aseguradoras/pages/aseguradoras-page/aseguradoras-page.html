@@ -1,0 +1,43 @@
+<!-- Layout con Sidebar -->
+<div class="layout-aseguradoras">
+  <!-- Sidebar -->
+  <app-sidebar 
+    [configuracion]="configuracionSidebar"
+    (elementoSeleccionado)="alSeleccionarElementoMenu($event)"
+    (cambioColapso)="alCambiarColapso($event)"
+    (cerrarSesion)="cerrarSesion()"
+  ></app-sidebar>
+
+  <!-- Contenido Principal -->
+  <div class="contenido-principal" [class.sidebar-colapsado]="configuracionSidebar?.colapsado">
+    <div class="pagina-aseguradoras">
+  <!-- Header de la página -->
+  <div class="header-pagina">
+    <div class="info-pagina">
+      <h1 class="titulo-pagina">{{ tituloPagina }}</h1>
+      <p class="descripcion-pagina">{{ descripcionPagina }}</p>
+    </div>
+    
+    <div class="acciones-pagina">
+      <button class="boton-accion boton-primario">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Agregar Aseguradora
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="contenido-pagina">
+    <!-- Tabla dinámica de aseguradoras -->
+    <app-tabla-dinamica
+      [configuracion]="configuracionTabla"
+      [datos]="datosAseguradoras"
+      [cargando]="cargandoTabla"
+      mensajeSinDatos="No hay aseguradoras disponibles"
+      (accionFila)="manejarAccionFila($event)"
+    ></app-tabla-dinamica>
+    </div>
+  </div>
+</div>

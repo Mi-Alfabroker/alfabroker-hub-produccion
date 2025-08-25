@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  alfa-api:
+    build: .
+    container_name: alfa_api
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+      DB_USER: alfa_user
+      DB_PASSWORD: alfa_password
+      DB_NAME: alfa_db
+    restart: unless-stopped

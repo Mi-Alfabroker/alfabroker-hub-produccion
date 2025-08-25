@@ -1,0 +1,208 @@
+// Layout principal para página con sidebar
+.layout-mis-clientes {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+// Contenido principal que se ajusta al sidebar
+.contenido-principal {
+  flex: 1;
+  margin-left: 280px; // Ancho del sidebar expandido
+  transition: margin-left 0.3s ease;
+  overflow-x: auto;
+  
+  &.sidebar-colapsado {
+    margin-left: 80px; // Ancho del sidebar colapsado
+  }
+  
+  // Responsive
+  @media (max-width: 768px) {
+    margin-left: 0 !important;
+  }
+}
+
+// Estilos específicos de la página de Mis Clientes
+.pagina-mis-clientes {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+// Header de la página
+.header-pagina {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+}
+
+.info-pagina {
+  flex: 1;
+}
+
+.titulo-pagina {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2F4858;
+  margin: 0 0 0.5rem 0;
+  
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+}
+
+.descripcion-pagina {
+  font-size: 1.1rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.acciones-pagina {
+  display: flex;
+  gap: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.boton-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  
+  &.boton-primario {
+    background-color: #33658A;
+    color: white;
+    
+    &:hover {
+      background-color: #2F4858;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Contenido de la página
+.contenido-pagina {
+  margin-top: 2rem;
+}
+
+// Tarjeta informativa
+.tarjeta-info {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+  }
+}
+
+.icono-tarjeta {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.contenido-tarjeta {
+  text-align: center;
+}
+
+.titulo-tarjeta {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2F4858;
+  margin: 0 0 1rem 0;
+}
+
+.descripcion-tarjeta {
+  font-size: 1.1rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+}
+
+// Funcionalidades
+.funcionalidades {
+  text-align: left;
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.subtitulo-funcionalidades {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2F4858;
+  margin: 0 0 1rem 0;
+}
+
+.lista-funcionalidades {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item-funcionalidad {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.icono-check {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+// Estado de desarrollo
+.estado-desarrollo {
+  background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #f6ae2d33;
+}
+
+.badge-desarrollo {
+  display: inline-block;
+  background: #F6AE2D;
+  color: #2F4858;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.texto-desarrollo {
+  color: #92400e;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}

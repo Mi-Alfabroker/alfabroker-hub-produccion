@@ -1,0 +1,97 @@
+<!-- Layout con Sidebar -->
+<div class="layout-mis-clientes">
+  <!-- Sidebar -->
+  <app-sidebar 
+    [configuracion]="configuracionSidebar"
+    (elementoSeleccionado)="alSeleccionarElementoMenu($event)"
+    (cambioColapso)="alCambiarColapso($event)"
+    (cerrarSesion)="cerrarSesion()"
+  ></app-sidebar>
+
+  <!-- Contenido Principal -->
+  <div class="contenido-principal" [class.sidebar-colapsado]="configuracionSidebar?.colapsado">
+    <div class="pagina-mis-clientes">
+  <!-- Header de la página -->
+  <div class="header-pagina">
+    <div class="info-pagina">
+      <h1 class="titulo-pagina">{{ tituloPagina }}</h1>
+      <p class="descripcion-pagina">{{ descripcionPagina }}</p>
+    </div>
+    
+    <div class="acciones-pagina">
+      <button class="boton-accion boton-primario">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Agregar Cliente
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="contenido-pagina">
+    <div class="tarjeta-info">
+      <div class="icono-tarjeta">
+        <svg class="w-12 h-12" style="color: #F6AE2D;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="m22 21-3-3"></path>
+          <circle cx="16" cy="11" r="3"></circle>
+        </svg>
+      </div>
+      
+      <div class="contenido-tarjeta">
+        <h2 class="titulo-tarjeta">Gestión de Clientes</h2>
+        <p class="descripcion-tarjeta">
+          En esta sección podrás administrar toda tu cartera de clientes, 
+          incluyendo sus datos personales, bienes asegurados, pólizas activas y el historial de interacciones.
+        </p>
+        
+        <div class="funcionalidades">
+          <h3 class="subtitulo-funcionalidades">Funcionalidades disponibles:</h3>
+          <ul class="lista-funcionalidades">
+            <li class="item-funcionalidad">
+              <svg class="icono-check" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Registro y gestión de clientes
+            </li>
+            <li class="item-funcionalidad">
+              <svg class="icono-check" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Administración de bienes y propiedades
+            </li>
+            <li class="item-funcionalidad">
+              <svg class="icono-check" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Seguimiento de pólizas activas
+            </li>
+            <li class="item-funcionalidad">
+              <svg class="icono-check" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Historial de comunicaciones
+            </li>
+            <li class="item-funcionalidad">
+              <svg class="icono-check" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Generación de reportes y análisis
+            </li>
+          </ul>
+        </div>
+
+        <div class="estado-desarrollo">
+          <span class="badge-desarrollo">🚧 En Desarrollo</span>
+          <p class="texto-desarrollo">
+            Este módulo se encuentra actualmente en desarrollo. 
+            Próximamente estará disponible para su uso completo.
+          </p>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>

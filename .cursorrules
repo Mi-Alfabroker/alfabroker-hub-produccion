@@ -1,0 +1,193 @@
+# Angular Architecture Cursor Rules
+
+## Estructura de Proyecto
+- Sigue ESTRICTAMENTE la estructura de carpetas establecida
+- Cada feature debe tener su propio módulo con lazy loading
+- Los componentes shared van en src/app/shared/components/
+- Los servicios core van en src/app/core/services/
+- Cada layout va en src/app/layout/
+
+## Naming Conventions
+- Archivos: kebab-case (user-list.component.ts)
+- Clases: PascalCase (UserListComponent)
+- Variables y métodos: camelCase (getUserData)
+- Constantes: UPPER_SNAKE_CASE (API_BASE_URL)
+- Selectores CSS: kebab-case con prefijo app (app-user-list)
+
+## Componentes Reutilizables
+- TODOS los componentes UI van en src/app/shared/components/ui/
+- Crear componentes atómicos y reutilizables
+- Usar @Input() y @Output() para comunicación
+- Implementar OnPush change detection strategy
+- Cada componente debe tener su carpeta con: .component.ts, .component.html, .component.scss, .component.spec.ts
+
+## Servicios
+- Core services en src/app/core/services/ (singleton)
+- Feature services en src/app/features/{feature}/services/
+- Usar HttpClient para API calls
+- Implementar error handling con RxJS operators
+- Inyección de dependencias con constructor
+
+## Routing
+- app-routing.module.ts solo rutas principales con lazy loading
+- Cada feature tiene su propio {feature}-routing.module.ts
+- Usar path guards en core/guards/
+- Implementar breadcrumbs y meta tags
+
+## Formularios
+- Usar Reactive Forms (FormBuilder, FormGroup, FormControl)
+- Validaciones custom en shared/utils/validators/
+- Form controls reutilizables en shared/components/ui/form-controls/
+
+## Estado y Datos
+- Modelos TypeScript en core/models/
+- Interfaces para API responses
+- Usar RxJS para manejo de estado reactivo
+- Implementar interceptors para auth/error handling
+
+## Estilos
+- SCSS siguiendo arquitectura 7-1
+- Variables globales en styles/abstracts/_variables.scss
+- Mixins reutilizables en styles/abstracts/_mixins.scss
+- BEM methodology para CSS classes
+- Responsive design mobile-first
+
+## Paleta de Colores
+- **Primary Blue (Lapis Lazuli)**: #33658A - Color principal para branding y elementos destacados
+- **Secondary Dark (Charcoal)**: #2F4858 - Color secundario para contrastes y fondos oscuros
+- **Neutral Light (White)**: #FFFFFF - Color neutro para fondos claros y texto sobre oscuro
+- **Accent Yellow (Hunyadi)**: #F6AE2D - Color de acento para alertas, highlights y call-to-actions
+- Usar estas variables en SCSS y como clases Tailwind custom
+- Aplicar consistentemente en toda la aplicación
+- El azul principal para navegación y botones primarios
+- El amarillo para notificaciones, badges y elementos interactivos
+
+## Iconos
+- Usar Angular Material Icons como biblioteca principal
+- Usar Lucide Angular como biblioteca complementaria para iconos modernos
+- Iconos van en componentes shared/components/ui/icon/
+- Crear servicio de iconos en core/services/icon.service.ts
+- Preferir Lucide para UI moderna y Material Icons para funcionalidad estándar
+- Usar tree-shaking importando solo iconos necesarios
+- Aplicar clases Tailwind para sizing (w-4 h-4, w-5 h-5, w-6 h-6)
+- Nomenclatura: kebab-case para nombres de iconos
+
+## Testing
+- No vamos a implementar tests
+
+## Performance
+- Lazy loading para features
+- OnPush change detection
+- TrackBy functions en *ngFor
+- Async pipe para observables
+- Tree shaking y bundle optimization
+
+## Code Quality
+- Usar TypeScript strict mode
+- ESLint + Prettier configurados
+- Interfaces para todos los objetos
+- Documentación JSDoc para métodos complejos
+- No usar 'any' type
+
+## Idioma
+- **Variables, métodos, propiedades**: Siempre en español (ej: nombreUsuario, obtenerDatos)
+- **Comentarios y documentación**: Siempre en español
+- **Nombres de archivos**: kebab-case en inglés para compatibilidad (login-page.component.ts)
+- **Selectores CSS**: kebab-case en inglés (app-login-page)
+- **Interfaces y tipos**: PascalCase en español (UsuarioInterface, DatosRespuesta)
+
+## Patterns
+- Repository pattern para datos
+- Observer pattern con RxJS
+- Singleton pattern para core services
+- Factory pattern para componentes dinámicos
+
+## Comandos Angular CLI
+```bash
+# Generar feature module
+ng generate module features/{feature-name} --routing
+
+# Generar componente en feature
+ng generate component features/{feature-name}/components/{component-name}
+
+# Generar componente reutilizable
+ng generate component shared/components/ui/{component-name}
+
+# Generar servicio core
+ng generate service core/services/{service-name}
+
+# Generar guard
+ng generate guard core/guards/{guard-name}
+
+# Generar pipe
+ng generate pipe shared/pipes/{pipe-name}
+```
+
+## Reglas de Importación
+```typescript
+// 1. Angular imports
+import { Component, OnInit } from '@angular/core';
+
+// 2. Third party imports
+import { Observable } from 'rxjs';
+
+// 3. App imports - core
+import { UserService } from '@core/services/user.service';
+
+// 4. App imports - shared
+import { LoadingComponent } from '@shared/components/ui/loading/loading.component';
+
+// 5. App imports - relative
+import { UserFormComponent } from '../user-form/user-form.component';
+```
+
+## Path Aliases (tsconfig.json)
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@core/*": ["src/app/core/*"],
+      "@shared/*": ["src/app/shared/*"],
+      "@features/*": ["src/app/features/*"],
+      "@layout/*": ["src/app/layout/*"],
+      "@environments/*": ["src/environments/*"]
+    }
+  }
+}
+```
+
+## Estructura de Componente Tipo
+```typescript
+@Component({
+  selector: 'app-component-name',
+  templateUrl: './component-name.component.html',
+  styleUrls: ['./component-name.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ComponentNameComponent implements OnInit, OnDestroy {
+  @Input() data: DataType;
+  @Output() action = new EventEmitter<ActionType>();
+  
+  private destroy$ = new Subject<void>();
+  
+  constructor(
+    private service: ServiceName,
+    private cdr: ChangeDetectorRef
+  ) {}
+  
+  ngOnInit(): void {}
+  
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}
+```
+
+## NO HACER
+- No mezclar lógica de negocio en componentes
+- No usar subscribe() sin unsubscribe
+- No crear servicios en features para lógica compartida
+- No poner estilos inline
+- No usar ViewChild sin verificar null
+- No hacer llamadas HTTP directas en componentes

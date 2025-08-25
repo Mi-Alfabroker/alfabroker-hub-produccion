@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  alfa-frontend:
+    image: nginx:alpine
+    container_name: alfa_frontend
+    ports:
+      - "4200:80"
+    volumes:
+      - ./dist/alfa-frontend/browser:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    depends_on:
+      - alfa-api
+    networks:
+      - alfa-network
+
+  alfa-api:
+    build: ../alfa-test
+    container_name: alfa_api
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+      DB_USER: alfa_user
+      DB_PASSWORD: alfa_password
+      DB_NAME: alfa_db
+    restart: unless-stopped
+    networks:
+      - alfa-network
+
+networks:
+  alfa-network:
+    driver: bridge

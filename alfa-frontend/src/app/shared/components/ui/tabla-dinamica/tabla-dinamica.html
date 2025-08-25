@@ -1,0 +1,235 @@
+<!-- Contenedor principal de la tabla -->
+<div class="tabla-dinamica" [class.responsiva]="configuracion.responsiva">
+  
+  <!-- Header con buscador y acciones -->
+  <div class="tabla-header" *ngIf="configuracion?.buscador || configuracion?.mostrarInfo">
+    <div class="tabla-info" *ngIf="configuracion?.mostrarInfo">
+      <span class="texto-info">
+        Mostrando {{ datosVista.length }} de {{ datos.length }} registros
+      </span>
+    </div>
+    
+    <div class="tabla-acciones" *ngIf="configuracion?.buscador">
+      <div class="buscador">
+        <div class="input-container">
+          <svg class="icono-buscar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="M21 21l-4.35-4.35"></path>
+          </svg>
+          <input
+            type="text"
+            [(ngModel)]="terminoBusqueda"
+            (input)="buscar()"
+            [placeholder]="configuracion.placeholderBuscador || 'Buscar...'"
+            class="input-buscar"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor de la tabla con scroll -->
+  <div class="tabla-container" [style.max-height]="configuracion.alturaMaxima">
+    <table class="tabla">
+      <!-- Header de la tabla -->
+      <thead class="tabla-head">
+        <tr class="fila-header">
+          <!-- Checkbox para seleccionar todas -->
+          <th class="celda-header celda-checkbox" *ngIf="configuracion?.seleccionable">
+            <label class="checkbox-container" *ngIf="configuracion?.seleccionMultiple">
+              <input
+                type="checkbox"
+                [checked]="todasSeleccionadas"
+                (change)="alternarSeleccionTodas()"
+                class="checkbox"
+              />
+              <span class="checkmark"></span>
+            </label>
+          </th>
+
+          <!-- Columnas dinámicas -->
+          <th
+            *ngFor="let columna of columnasVisibles"
+            class="celda-header"
+            [class.ordenable]="columna.ordenable"
+            [class.activa]="estadoOrdenamiento.columnaActiva === columna.clave"
+            [style.width]="columna.ancho"
+            [style.text-align]="columna.alineacion || 'left'"
+            (click)="ordenarPor(columna)"
+          >
+            <div class="header-contenido">
+              <span class="titulo-columna">{{ columna.titulo }}</span>
+              
+              <!-- Íconos de ordenamiento -->
+              <div class="iconos-ordenamiento" *ngIf="columna.ordenable">
+                <svg 
+                  class="icono-orden" 
+                  [class.activo]="estadoOrdenamiento.columnaActiva === columna.clave && estadoOrdenamiento.direccion === 'asc'"
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="2"
+                >
+                  <polyline points="18,15 12,9 6,15"></polyline>
+                </svg>
+                <svg 
+                  class="icono-orden" 
+                  [class.activo]="estadoOrdenamiento.columnaActiva === columna.clave && estadoOrdenamiento.direccion === 'desc'"
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="2"
+                >
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </th>
+        </tr>
+      </thead>
+
+      <!-- Body de la tabla -->
+      <tbody class="tabla-body" *ngIf="!cargando">
+        <!-- Fila de datos -->
+        <tr
+          *ngFor="let fila of datosVista; let i = index"
+          class="fila-datos"
+          [class.seleccionada]="filasSeleccionadas.has(i)"
+        >
+          <!-- Checkbox de selección -->
+          <td class="celda-datos celda-checkbox" *ngIf="configuracion?.seleccionable">
+            <label class="checkbox-container">
+              <input
+                type="checkbox"
+                [checked]="filasSeleccionadas.has(i)"
+                (change)="alternarSeleccionFila(i)"
+                class="checkbox"
+              />
+              <span class="checkmark"></span>
+            </label>
+          </td>
+
+          <!-- Celdas dinámicas -->
+          <td
+            *ngFor="let columna of columnasVisibles"
+            class="celda-datos"
+            [class]="'celda-' + columna.tipo"
+            [style.text-align]="columna.alineacion || 'left'"
+          >
+            <!-- Contenido según el tipo de columna -->
+            <ng-container [ngSwitch]="columna.tipo">
+              
+              <!-- Tipo: Estado -->
+              <span *ngSwitchCase="'estado'" class="badge-estado" [class]="'badge-' + formatearEstado(fila[columna.clave], columna.configuracion?.estados).color">
+                <span class="punto-estado"></span>
+                {{ formatearEstado(fila[columna.clave], columna.configuracion?.estados).etiqueta }}
+              </span>
+
+              <!-- Tipo: Acciones -->
+              <div *ngSwitchCase="'acciones'" class="acciones-celda">
+                <button
+                  *ngFor="let accion of columna.configuracion?.acciones"
+                  class="boton-accion"
+                  [class]="'boton-' + accion.color"
+                  [disabled]="esAccionDeshabilitada(accion, fila)"
+                  [title]="accion.tooltip"
+                  (click)="ejecutarAccion(accion.id, fila, i)"
+                >
+                  <span [innerHTML]="accion.icono"></span>
+                </button>
+              </div>
+
+              <!-- Tipo: Checkbox -->
+              <label *ngSwitchCase="'checkbox'" class="checkbox-container">
+                <input
+                  type="checkbox"
+                  [checked]="fila[columna.clave]"
+                  class="checkbox"
+                  disabled
+                />
+                <span class="checkmark"></span>
+              </label>
+
+              <!-- Tipo: Ícono -->
+              <div *ngSwitchCase="'icono'" class="icono-celda">
+                <span [innerHTML]="fila[columna.clave]" class="icono-contenido"></span>
+              </div>
+
+              <!-- Tipos por defecto: texto, número, fecha -->
+              <span *ngSwitchDefault>
+                {{ obtenerValorCelda(fila, columna) }}
+              </span>
+            </ng-container>
+          </td>
+        </tr>
+
+        <!-- Fila cuando no hay datos -->
+        <tr *ngIf="datosVista.length === 0" class="fila-vacia">
+          <td [attr.colspan]="columnasVisibles.length + (configuracion.seleccionable ? 1 : 0)" class="celda-vacia">
+            <div class="mensaje-vacio">
+              <svg class="icono-vacio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="M21 21l-4.35-4.35"></path>
+              </svg>
+              <p>{{ mensajeSinDatos }}</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+
+      <!-- Estado de carga -->
+      <tbody *ngIf="cargando" class="tabla-body">
+        <tr *ngFor="let i of [1,2,3,4,5]" class="fila-datos fila-skeleton">
+          <td *ngIf="configuracion?.seleccionable" class="celda-datos">
+            <div class="skeleton skeleton-checkbox"></div>
+          </td>
+          <td *ngFor="let columna of columnasVisibles" class="celda-datos">
+            <div class="skeleton" [class]="'skeleton-' + columna.tipo"></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="tabla-footer" *ngIf="configuracion?.paginacion && totalPaginas > 1">
+    <div class="paginacion">
+      <button
+        class="boton-pagina"
+        [disabled]="paginaActual === 1"
+        (click)="cambiarPagina(paginaActual - 1)"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15,18 9,12 15,6"></polyline>
+        </svg>
+        Anterior
+      </button>
+
+      <div class="numeros-pagina">
+        <button
+          *ngFor="let pagina of [].constructor(totalPaginas); let i = index"
+          class="boton-numero"
+          [class.activo]="paginaActual === i + 1"
+          (click)="cambiarPagina(i + 1)"
+        >
+          {{ i + 1 }}
+        </button>
+      </div>
+
+      <button
+        class="boton-pagina"
+        [disabled]="paginaActual === totalPaginas"
+        (click)="cambiarPagina(paginaActual + 1)"
+      >
+        Siguiente
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <div class="info-paginacion">
+      Página {{ paginaActual }} de {{ totalPaginas }}
+    </div>
+  </div>
+</div>

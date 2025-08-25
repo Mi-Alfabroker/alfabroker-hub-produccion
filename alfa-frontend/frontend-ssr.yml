@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  alfa-frontend-ssr:
+    image: node:18-alpine
+    container_name: alfa_frontend_ssr
+    working_dir: /app
+    ports:
+      - "4200:4000"
+    volumes:
+      - ./dist/alfa-frontend:/app
+      - ./package.json:/app/package.json:ro
+    command: ["node", "server/server.mjs"]
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+    restart: unless-stopped
+    depends_on:
+      - alfa-api
+    networks:
+      - alfa-network
+
+  alfa-api:
+    build: ../alfa-test
+    container_name: alfa_api
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+      DB_USER: alfa_user
+      DB_PASSWORD: alfa_password
+      DB_NAME: alfa_db
+    restart: unless-stopped
+    networks:
+      - alfa-network
+
+networks:
+  alfa-network:
+    driver: bridge
