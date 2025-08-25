@@ -4,6 +4,7 @@ import sys
 import time
 import pymysql
 from app import create_app
+import os
 
 def check_mysql_connection():
     """Verificar si MySQL está disponible antes de iniciar la API"""
@@ -14,7 +15,7 @@ def check_mysql_connection():
         try:
             # Intentar conectar a MySQL
             connection = pymysql.connect(
-                host='localhost',
+                host=os.getenv('DB_HOST', 'localhost'),
                 port=3306,
                 user='alfa_user',
                 password='AlfaUser2024!',
