@@ -17,7 +17,7 @@ def check_mysql_connection():
                 host='localhost',
                 port=3306,
                 user='alfa_user',
-                password='alfa_password',
+                password='AlfaUser2024!',
                 database='alfa_db'
             )
             connection.close()
