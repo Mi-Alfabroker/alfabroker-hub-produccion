@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 
@@ -74,7 +74,8 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private sidebarConfigService: SidebarConfigService,
-    private aseguradoraService: AseguradoraService
+    private aseguradoraService: AseguradoraService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.configurarTabla();
   }
@@ -241,6 +242,13 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
    */
   private cargarAseguradoras(): void {
     console.log('AseguradorasPageComponent - Iniciando carga de aseguradoras');
+    
+    // Solo cargar datos si estamos en el navegador (no durante SSR)
+    if (!isPlatformBrowser(this.platformId)) {
+      console.log('AseguradorasPageComponent - SSR detectado, omitiendo carga de API');
+      return;
+    }
+    
     this.cargandoTabla = true;
     this.botonAgregarDeshabilitado = true;
     this.mensajeError = null;
@@ -312,6 +320,11 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
    * Guarda una aseguradora (crear o actualizar)
    */
   guardarAseguradora(datosAseguradora: CrearAseguradoraDto | ActualizarAseguradoraDto): void {
+    // Solo ejecutar si estamos en el navegador
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    
     const esEdicion = !!this.aseguradoraSeleccionada;
     const operacion = esEdicion 
       ? this.aseguradoraService.actualizarAseguradora(this.aseguradoraSeleccionada!.id, datosAseguradora as ActualizarAseguradoraDto)
@@ -354,7 +367,12 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
    * Elimina una aseguradora
    */
   eliminarAseguradora(aseguradora: Aseguradora): void {
-    if (!confirm(`¿Está seguro de que desea eliminar la aseguradora "${aseguradora.nombre}"?`)) {
+    if (!this.confirmarAccion(`¿Está seguro de que desea eliminar la aseguradora "${aseguradora.nombre}"?`)) {
+      return;
+    }
+
+    // Solo ejecutar si estamos en el navegador
+    if (!isPlatformBrowser(this.platformId)) {
       return;
     }
 
@@ -409,6 +427,17 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
       this.mensajeExito = null;
       this.cdr.markForCheck();
     }, 5000);
+  }
+
+  /**
+   * Confirma una acción de forma segura (compatible con SSR)
+   */
+  private confirmarAccion(mensaje: string): boolean {
+    if (isPlatformBrowser(this.platformId)) {
+      return confirm(mensaje);
+    }
+    // Durante SSR, no mostrar confirmación y retornar false para evitar acciones
+    return false;
   }
 
   /**
