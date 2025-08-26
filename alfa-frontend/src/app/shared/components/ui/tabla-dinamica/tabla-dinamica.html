@@ -131,11 +131,13 @@
                   *ngFor="let accion of columna.configuracion?.acciones"
                   class="boton-accion"
                   [class]="'boton-' + accion.color"
+                  [class.cargando]="esAccionCargando(accion, fila)"
                   [disabled]="esAccionDeshabilitada(accion, fila)"
                   [title]="accion.tooltip"
                   (click)="ejecutarAccion(accion.id, fila, i)"
                 >
-                  <span [innerHTML]="accion.icono"></span>
+                  <span *ngIf="esAccionCargando(accion, fila)" class="spinner-eliminar"></span>
+                  <span *ngIf="!esAccionCargando(accion, fila)" class="icono-accion" [class]="accion.icono"></span>
                 </button>
               </div>
 

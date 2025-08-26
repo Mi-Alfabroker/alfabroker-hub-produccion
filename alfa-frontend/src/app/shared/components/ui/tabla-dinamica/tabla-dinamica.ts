@@ -30,6 +30,9 @@ export class TablaDinamicaComponent implements OnInit, OnChanges {
   /** Si la tabla está cargando datos */
   @Input() cargando = false;
   
+  /** ID del elemento que se está eliminando (para mostrar spinner) */
+  @Input() eliminandoElementoId: number | string | null = null;
+  
   /** Mensaje cuando no hay datos */
   @Input() mensajeSinDatos = 'No hay datos disponibles';
   
@@ -67,6 +70,9 @@ export class TablaDinamicaComponent implements OnInit, OnChanges {
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    console.log('TablaDinamicaComponent - ngOnInit');
+    console.log('TablaDinamicaComponent - Configuración:', this.configuracion);
+    console.log('TablaDinamicaComponent - Datos:', this.datos);
     this.procesarDatos();
   }
 
@@ -256,6 +262,7 @@ export class TablaDinamicaComponent implements OnInit, OnChanges {
    * Ejecuta una acción en una fila
    */
   ejecutarAccion(accionId: string, fila: any, indice: number): void {
+    console.log('TablaDinamicaComponent - Ejecutando acción:', accionId, 'en fila:', fila);
     this.accionFila.emit({
       accion: accionId,
       fila,
@@ -331,7 +338,21 @@ export class TablaDinamicaComponent implements OnInit, OnChanges {
    * Verifica si una acción está deshabilitada para una fila
    */
   esAccionDeshabilitada(accion: any, fila: any): boolean {
+    // Si se está eliminando este elemento, deshabilitar todas las acciones
+    if (this.eliminandoElementoId !== null && fila.id === this.eliminandoElementoId) {
+      return true;
+    }
+    
     return accion.deshabilitada ? accion.deshabilitada(fila) : false;
+  }
+
+  /**
+   * Verifica si una acción específica está cargando
+   */
+  esAccionCargando(accion: any, fila: any): boolean {
+    return this.eliminandoElementoId !== null && 
+           fila.id === this.eliminandoElementoId && 
+           accion.id === 'eliminar';
   }
 
   /**

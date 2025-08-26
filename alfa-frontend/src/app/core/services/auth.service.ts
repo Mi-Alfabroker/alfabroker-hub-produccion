@@ -20,7 +20,7 @@ import {
 })
 export class AuthService {
   /** URL base de la API */
-  private readonly urlApi = 'http://18.188.89.220:5000/api';
+  private readonly urlApi = '/api';
   
   /** Clave para almacenar el token en localStorage */
   private readonly claveToken = 'token_agente';

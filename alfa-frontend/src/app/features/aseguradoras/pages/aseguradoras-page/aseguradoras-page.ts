@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, finalize } from 'rxjs/operators';
 
 import { AuthService } from '@core/services/auth.service';
 import { AgenteAutenticado } from '@core/models/auth.interface';
@@ -11,11 +11,14 @@ import { ConfiguracionSidebar, ElementoMenu } from '@core/models/sidebar.interfa
 import { SidebarConfigService } from '@core/services/sidebar-config.service';
 import { TablaDinamicaComponent } from '@shared/components/ui/tabla-dinamica/tabla-dinamica';
 import { ConfiguracionTabla, EventoAccionFila } from '@shared/models/tabla-dinamica.interface';
+import { FormularioAseguradoraComponent } from '@shared/components/ui/formulario-aseguradora/formulario-aseguradora';
+import { AseguradoraService } from '@core/services/aseguradora.service';
+import { Aseguradora, CrearAseguradoraDto, ActualizarAseguradoraDto } from '@core/models/aseguradora.interface';
 
 @Component({
   selector: 'app-aseguradoras-page',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, TablaDinamicaComponent],
+  imports: [CommonModule, SidebarComponent, TablaDinamicaComponent, FormularioAseguradoraComponent],
   templateUrl: './aseguradoras-page.html',
   styleUrls: ['./aseguradoras-page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -37,10 +40,31 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
   configuracionTabla!: ConfiguracionTabla;
   
   /** Datos de las aseguradoras */
-  datosAseguradoras: any[] = [];
+  datosAseguradoras: Aseguradora[] = [];
   
   /** Estado de carga */
   cargandoTabla = false;
+  
+  /** Si mostrar el formulario */
+  mostrarFormulario = false;
+  
+  /** Si el botón de agregar está deshabilitado */
+  botonAgregarDeshabilitado = false;
+  
+  /** ID de la aseguradora que se está eliminando */
+  eliminandoAseguradoraId: number | null = null;
+  
+  /** Aseguradora seleccionada para editar */
+  aseguradoraSeleccionada: Aseguradora | null = null;
+  
+  /** Mensaje de error */
+  mensajeError: string | null = null;
+  
+  /** Mensaje de éxito */
+  mensajeExito: string | null = null;
+  
+  /** Referencia al componente del formulario */
+  @ViewChild('formularioAseguradora') formularioAseguradora: any;
   
   /** Subject para manejar la destrucción del componente */
   private destruir$ = new Subject<void>();
@@ -49,25 +73,32 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
     private servicioAuth: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private sidebarConfigService: SidebarConfigService
+    private sidebarConfigService: SidebarConfigService,
+    private aseguradoraService: AseguradoraService
   ) {
     this.configurarTabla();
-    this.cargarDatosEjemplo();
   }
 
   ngOnInit(): void {
+    console.log('AseguradorasPageComponent - ngOnInit iniciado');
+    
     // Suscribirse a los datos del agente
     this.servicioAuth.agenteActual$
       .pipe(takeUntil(this.destruir$))
       .subscribe(agente => {
+        console.log('AseguradorasPageComponent - Agente recibido:', agente);
         this.agenteActual = agente;
         
         // Si no hay agente autenticado, redirigir al login
         if (!agente) {
+          console.log('AseguradorasPageComponent - No hay agente, redirigiendo al login');
           this.router.navigate(['/']);
         } else {
+          console.log('AseguradorasPageComponent - Agente válido, configurando sidebar y cargando aseguradoras');
           // Configurar el sidebar con los datos del agente usando el servicio global
           this.sidebarConfigService.configurarSidebar(agente);
+          // Cargar las aseguradoras cuando el agente esté autenticado
+          this.cargarAseguradoras();
         }
         
         this.cdr.markForCheck();
@@ -83,6 +114,14 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
 
     // Actualizar la ruta activa cuando se navega
     this.sidebarConfigService.actualizarRutaActiva();
+    
+    // Fallback: Si después de 2 segundos no se ha cargado el agente, cargar aseguradoras de todos modos
+    setTimeout(() => {
+      if (!this.agenteActual && this.datosAseguradoras.length === 0) {
+        console.log('AseguradorasPageComponent - Fallback: Cargando aseguradoras sin agente');
+        this.cargarAseguradoras();
+      }
+    }, 2000);
   }
 
 
@@ -125,104 +164,69 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
     this.configuracionTabla = {
       columnas: [
         {
-          clave: 'icono',
-          titulo: '',
-          tipo: 'icono',
-          ancho: '60px',
-          ordenable: false,
-          alineacion: 'centro'
-        },
-        {
           clave: 'id',
           titulo: 'ID',
           tipo: 'texto',
-          ancho: '100px',
+          ancho: '80px',
           ordenable: true
         },
         {
-          clave: 'aseguradora',
-          titulo: 'Aseguradora',
+          clave: 'nombre',
+          titulo: 'Nombre',
           tipo: 'texto',
           ordenable: true
         },
         {
-          clave: 'estado',
-          titulo: 'Status',
-          tipo: 'estado',
+          clave: 'correo_comercial',
+          titulo: 'Correo Comercial',
+          tipo: 'texto',
+          ancho: '200px',
+          ordenable: true
+        },
+        {
+          clave: 'contacto_asignado',
+          titulo: 'Contacto',
+          tipo: 'texto',
           ancho: '150px',
-          ordenable: true,
-          alineacion: 'centro',
-          configuracion: {
-            estados: {
-              'FULFILLED': {
-                etiqueta: 'Fulfilled',
-                color: 'verde'
-              },
-              'CONFIRMED': {
-                etiqueta: 'Confirmed',
-                color: 'azul'
-              },
-              'WAITING_SHIPMENT': {
-                etiqueta: 'Waiting Shipment',
-                color: 'amarillo'
-              }
-            }
-          }
-        },
-        {
-          clave: 'monto',
-          titulo: 'Budget',
-          tipo: 'numero',
-          ancho: '120px',
-          ordenable: true,
-          alineacion: 'derecha',
-          configuracion: {
-            formatoNumero: {
-              decimales: 1,
-              moneda: true,
-              separadorMiles: true
-            }
-          }
-        },
-        {
-          clave: 'fechaCreacion',
-          titulo: 'Created',
-          tipo: 'fecha',
-          ancho: '120px',
           ordenable: true
         },
         {
-          clave: 'fechaVencimiento',
-          titulo: 'Expired',
-          tipo: 'fecha',
+          clave: 'numeral_asistencia',
+          titulo: 'Asistencia',
+          tipo: 'texto',
           ancho: '120px',
-          ordenable: true
+          ordenable: true,
+          alineacion: 'centro'
         },
         {
           clave: 'acciones',
-          titulo: '',
+          titulo: 'Acciones',
           tipo: 'acciones',
-          ancho: '80px',
+          ancho: '120px',
           ordenable: false,
           alineacion: 'centro',
           configuracion: {
             acciones: [
               {
-                id: 'ver',
-                etiqueta: 'Ver',
-                icono: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>`,
+                id: 'editar',
+                etiqueta: 'Editar',
+                icono: 'icono-editar',
                 color: 'primario',
-                tooltip: 'Ver detalles'
+                tooltip: 'Editar aseguradora'
+              },
+              {
+                id: 'eliminar',
+                etiqueta: 'Eliminar',
+                icono: 'icono-eliminar',
+                color: 'error',
+                tooltip: 'Eliminar aseguradora'
               }
             ]
           }
         }
       ],
-      seleccionable: true,
-      seleccionMultiple: true,
+      seleccionable: false,
+      seleccionMultiple: false,
       paginacion: true,
       filasPorPagina: 10,
       buscador: true,
@@ -233,92 +237,178 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Carga datos de ejemplo para mostrar en la tabla
+   * Carga las aseguradoras desde la API
    */
-  private cargarDatosEjemplo(): void {
-    this.datosAseguradoras = [
-      {
-        id: '#SO-00003',
-        icono: '🏢',
-        aseguradora: 'Gaspar Arhanes',
-        estado: 'FULFILLED',
-        monto: 2874.56,
-        fechaCreacion: new Date('2019-05-18'),
-        fechaVencimiento: new Date()
-      },
-      {
-        id: '#SO-00004',
-        icono: '🏢',
-        aseguradora: 'Tristique van Aertsen',
-        estado: 'CONFIRMED',
-        monto: 1478.48,
-        fechaCreacion: new Date('2019-05-12'),
-        fechaVencimiento: new Date('2019-05-13')
-      },
-      {
-        id: '#SO-00005',
-        icono: '🏢',
-        aseguradora: 'Tristique Huitlord',
-        estado: 'WAITING_SHIPMENT',
-        monto: 243.12,
-        fechaCreacion: new Date('2019-05-14'),
-        fechaVencimiento: new Date('2019-06-12')
-      },
-      {
-        id: '#SO-00006',
-        icono: '🏢',
-        aseguradora: 'Tongkiang Jun-Seo',
-        estado: 'FULFILLED',
-        monto: 123.16,
-        fechaCreacion: new Date('2019-05-14'),
-        fechaVencimiento: new Date('2019-06-14')
-      },
-      {
-        id: '#SO-00007',
-        icono: '🏢',
-        aseguradora: 'Ngọ Hải Giang',
-        estado: 'CONFIRMED',
-        monto: 194.76,
-        fechaCreacion: new Date('2019-05-16'),
-        fechaVencimiento: new Date('2019-06-24')
-      },
-      {
-        id: '#SO-00008',
-        icono: '🏢',
-        aseguradora: 'Mijenna Taotic',
-        estado: 'CONFIRMED',
-        monto: 18789.72,
-        fechaCreacion: new Date('2019-05-18'),
-        fechaVencimiento: new Date('2019-06-01')
-      },
-      {
-        id: '#SO-00009',
-        icono: '🏢',
-        aseguradora: 'Lestée Moss',
-        estado: 'WAITING_SHIPMENT',
-        monto: 457.45,
-        fechaCreacion: new Date('2019-05-19'),
-        fechaVencimiento: new Date('2019-05-12')
-      },
-      {
-        id: '#SO-00010',
-        icono: '🏢',
-        aseguradora: 'Jacqueline Lleski',
-        estado: 'FULFILLED',
-        monto: 4411.96,
-        fechaCreacion: new Date('2019-05-18'),
-        fechaVencimiento: new Date('2019-06-08')
-      },
-      {
-        id: '#SO-00011',
-        icono: '🏢',
-        aseguradora: 'Dai Jiang',
-        estado: 'FULFILLED',
-        monto: 2794.23,
-        fechaCreacion: new Date('2019-05-21'),
-        fechaVencimiento: new Date('2019-06-24')
-      }
-    ];
+  private cargarAseguradoras(): void {
+    console.log('AseguradorasPageComponent - Iniciando carga de aseguradoras');
+    this.cargandoTabla = true;
+    this.botonAgregarDeshabilitado = true;
+    this.mensajeError = null;
+    this.cdr.markForCheck();
+
+    this.aseguradoraService.obtenerAseguradoras(false)
+      .pipe(
+        takeUntil(this.destruir$),
+        finalize(() => {
+          console.log('AseguradorasPageComponent - Finalizando carga de aseguradoras');
+          this.cargandoTabla = false;
+          this.botonAgregarDeshabilitado = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: (aseguradoras) => {
+          console.log('AseguradorasPageComponent - Aseguradoras recibidas:', aseguradoras);
+          this.datosAseguradoras = aseguradoras;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('AseguradorasPageComponent - Error al cargar aseguradoras:', error);
+          this.mensajeError = `Error al cargar aseguradoras: ${error.message}`;
+          this.datosAseguradoras = [];
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  /**
+   * Abre el formulario para crear una nueva aseguradora
+   */
+  abrirFormularioCrear(): void {
+    if (this.botonAgregarDeshabilitado) {
+      return;
+    }
+    
+    this.aseguradoraSeleccionada = null;
+    this.mostrarFormulario = true;
+    this.mensajeError = null;
+    this.mensajeExito = null;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Abre el formulario para editar una aseguradora
+   */
+  abrirFormularioEditar(aseguradora: Aseguradora): void {
+    this.aseguradoraSeleccionada = aseguradora;
+    this.mostrarFormulario = true;
+    this.mensajeError = null;
+    this.mensajeExito = null;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Cierra el formulario
+   */
+  cerrarFormulario(): void {
+    this.mostrarFormulario = false;
+    this.aseguradoraSeleccionada = null;
+    this.mensajeError = null;
+    this.mensajeExito = null;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Guarda una aseguradora (crear o actualizar)
+   */
+  guardarAseguradora(datosAseguradora: CrearAseguradoraDto | ActualizarAseguradoraDto): void {
+    const esEdicion = !!this.aseguradoraSeleccionada;
+    const operacion = esEdicion 
+      ? this.aseguradoraService.actualizarAseguradora(this.aseguradoraSeleccionada!.id, datosAseguradora as ActualizarAseguradoraDto)
+      : this.aseguradoraService.crearAseguradora(datosAseguradora as CrearAseguradoraDto);
+
+    operacion
+      .pipe(takeUntil(this.destruir$))
+      .subscribe({
+        next: (aseguradora) => {
+          // Resetear el estado del formulario
+          if (this.formularioAseguradora) {
+            this.formularioAseguradora.resetearEnvio();
+          }
+          
+          this.mensajeExito = esEdicion 
+            ? 'Aseguradora actualizada exitosamente' 
+            : 'Aseguradora creada exitosamente';
+          
+          // Esperar un momento antes de cerrar para mostrar el mensaje
+          setTimeout(() => {
+            this.cerrarFormulario();
+          }, 1500);
+          
+          this.cargarAseguradoras(); // Recargar la tabla
+          this.limpiarMensajes();
+        },
+        error: (error) => {
+          // Resetear el estado del formulario también en caso de error
+          if (this.formularioAseguradora) {
+            this.formularioAseguradora.resetearEnvio();
+          }
+          
+          this.mensajeError = `Error al ${esEdicion ? 'actualizar' : 'crear'} aseguradora: ${error.message}`;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  /**
+   * Elimina una aseguradora
+   */
+  eliminarAseguradora(aseguradora: Aseguradora): void {
+    if (!confirm(`¿Está seguro de que desea eliminar la aseguradora "${aseguradora.nombre}"?`)) {
+      return;
+    }
+
+    // Establecer estado de eliminación
+    this.eliminandoAseguradoraId = aseguradora.id;
+    this.mensajeError = null;
+    this.mensajeExito = null;
+    this.cdr.markForCheck();
+
+    this.aseguradoraService.eliminarAseguradora(aseguradora.id)
+      .pipe(
+        takeUntil(this.destruir$),
+        finalize(() => {
+          // Limpiar estado de eliminación
+          this.eliminandoAseguradoraId = null;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: () => {
+          console.log('✅ Aseguradora eliminada exitosamente');
+          this.mensajeExito = 'Aseguradora eliminada exitosamente';
+          this.cargarAseguradoras(); // Recargar la tabla
+          this.cdr.markForCheck();
+          
+          // Limpiar mensaje después de 3 segundos
+          setTimeout(() => {
+            this.mensajeExito = null;
+            this.cdr.markForCheck();
+          }, 3000);
+        },
+        error: (error) => {
+          console.error('❌ Error al eliminar aseguradora:', error);
+          this.mensajeError = `Error al eliminar aseguradora: ${error.message}`;
+          this.cdr.markForCheck();
+          
+          // Limpiar mensaje de error después de 5 segundos
+          setTimeout(() => {
+            this.mensajeError = null;
+            this.cdr.markForCheck();
+          }, 5000);
+        }
+      });
+  }
+
+  /**
+   * Limpia los mensajes después de un tiempo
+   */
+  private limpiarMensajes(): void {
+    setTimeout(() => {
+      this.mensajeError = null;
+      this.mensajeExito = null;
+      this.cdr.markForCheck();
+    }, 5000);
   }
 
   /**
@@ -326,10 +416,14 @@ export class AseguradorasPageComponent implements OnInit, OnDestroy {
    * @param evento Evento de acción en fila
    */
   manejarAccionFila(evento: EventoAccionFila): void {
+    const aseguradora = evento.fila as Aseguradora;
+    
     switch (evento.accion) {
-      case 'ver':
-        console.log('Ver detalles de:', evento.fila);
-        // Aquí iría la lógica para ver detalles
+      case 'editar':
+        this.abrirFormularioEditar(aseguradora);
+        break;
+      case 'eliminar':
+        this.eliminarAseguradora(aseguradora);
         break;
       default:
         console.log('Acción no reconocida:', evento.accion);

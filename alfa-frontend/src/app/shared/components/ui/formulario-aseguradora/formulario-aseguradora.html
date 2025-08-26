@@ -1,0 +1,383 @@
+<div class="formulario-aseguradora">
+  <div class="formulario-header">
+    <div class="header-contenido">
+      <div class="icono-header">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
+        </svg>
+      </div>
+      <div class="titulo-contenido">
+        <h2 class="formulario-titulo">{{ tituloFormulario }}</h2>
+        <p class="formulario-subtitulo">Complete la información de la aseguradora</p>
+      </div>
+    </div>
+  </div>
+
+  <form [formGroup]="formulario" (ngSubmit)="alEnviarFormulario()" class="formulario-contenido">
+    
+    <!-- Información Básica -->
+    <div class="seccion-formulario">
+      <div class="seccion-header">
+        <div class="seccion-icono">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h3 class="seccion-titulo">Información Básica</h3>
+      </div>
+      
+      <div class="campos-grid">
+        <!-- Nombre -->
+        <div class="campo-grupo">
+          <label for="nombre" class="campo-etiqueta">
+            Nombre de la Aseguradora *
+          </label>
+          <input
+            id="nombre"
+            type="text"
+            formControlName="nombre"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('nombre')"
+            placeholder="Ej: Seguros Alfa S.A."
+          />
+          <div *ngIf="tieneCampoError('nombre')" class="mensaje-error">
+            {{ obtenerMensajeError('nombre') }}
+          </div>
+        </div>
+
+        <!-- Numeral de Asistencia -->
+        <div class="campo-grupo">
+          <label for="numeral_asistencia" class="campo-etiqueta">
+            Numeral de Asistencia
+          </label>
+          <input
+            id="numeral_asistencia"
+            type="text"
+            formControlName="numeral_asistencia"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('numeral_asistencia')"
+            placeholder="Ej: #321"
+          />
+          <div *ngIf="tieneCampoError('numeral_asistencia')" class="mensaje-error">
+            {{ obtenerMensajeError('numeral_asistencia') }}
+          </div>
+        </div>
+
+        <!-- Correo Comercial -->
+        <div class="campo-grupo">
+          <label for="correo_comercial" class="campo-etiqueta">
+            Correo Comercial
+          </label>
+          <input
+            id="correo_comercial"
+            type="email"
+            formControlName="correo_comercial"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('correo_comercial')"
+            placeholder="comercial@aseguradora.com"
+          />
+          <div *ngIf="tieneCampoError('correo_comercial')" class="mensaje-error">
+            {{ obtenerMensajeError('correo_comercial') }}
+          </div>
+        </div>
+
+        <!-- Correo Reclamaciones -->
+        <div class="campo-grupo">
+          <label for="correo_reclamaciones" class="campo-etiqueta">
+            Correo Reclamaciones
+          </label>
+          <input
+            id="correo_reclamaciones"
+            type="email"
+            formControlName="correo_reclamaciones"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('correo_reclamaciones')"
+            placeholder="reclamos@aseguradora.com"
+          />
+          <div *ngIf="tieneCampoError('correo_reclamaciones')" class="mensaje-error">
+            {{ obtenerMensajeError('correo_reclamaciones') }}
+          </div>
+        </div>
+
+        <!-- Contacto Asignado -->
+        <div class="campo-grupo">
+          <label for="contacto_asignado" class="campo-etiqueta">
+            Contacto Asignado
+          </label>
+          <input
+            id="contacto_asignado"
+            type="text"
+            formControlName="contacto_asignado"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('contacto_asignado')"
+            placeholder="Nombre del contacto"
+          />
+          <div *ngIf="tieneCampoError('contacto_asignado')" class="mensaje-error">
+            {{ obtenerMensajeError('contacto_asignado') }}
+          </div>
+        </div>
+
+        <!-- Logo URL -->
+        <div class="campo-grupo">
+          <label for="logo_url" class="campo-etiqueta">
+            URL del Logo
+          </label>
+          <input
+            id="logo_url"
+            type="url"
+            formControlName="logo_url"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('logo_url')"
+            placeholder="https://ejemplo.com/logo.png"
+          />
+          <div *ngIf="tieneCampoError('logo_url')" class="mensaje-error">
+            {{ obtenerMensajeError('logo_url') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Dirección de Oficina -->
+      <div class="campo-grupo campo-completo">
+        <label for="oficina_direccion" class="campo-etiqueta">
+          Dirección de la Oficina Principal
+        </label>
+        <textarea
+          id="oficina_direccion"
+          formControlName="oficina_direccion"
+          class="campo-textarea"
+          [class.campo-error]="tieneCampoError('oficina_direccion')"
+          placeholder="Dirección completa de la oficina principal"
+          rows="3"
+        ></textarea>
+        <div *ngIf="tieneCampoError('oficina_direccion')" class="mensaje-error">
+          {{ obtenerMensajeError('oficina_direccion') }}
+        </div>
+      </div>
+
+      <!-- Respaldo Internacional -->
+      <div class="campo-grupo campo-completo">
+        <label for="respaldo_internacional" class="campo-etiqueta">
+          Respaldo Internacional
+        </label>
+        <textarea
+          id="respaldo_internacional"
+          formControlName="respaldo_internacional"
+          class="campo-textarea"
+          [class.campo-error]="tieneCampoError('respaldo_internacional')"
+          placeholder="Información sobre respaldo internacional"
+          rows="3"
+        ></textarea>
+        <div *ngIf="tieneCampoError('respaldo_internacional')" class="mensaje-error">
+          {{ obtenerMensajeError('respaldo_internacional') }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Comisiones Normales -->
+    <div class="seccion-formulario">
+      <div class="seccion-header">
+        <div class="seccion-icono">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <h3 class="seccion-titulo">Comisiones Normales</h3>
+      </div>
+      <p class="seccion-descripcion">Porcentajes de comisión por tipo de póliza (valores entre 0 y 1)</p>
+      
+      <div class="campos-grid">
+        <div class="campo-grupo">
+          <label for="comision_hogar" class="campo-etiqueta">Hogar</label>
+          <input
+            id="comision_hogar"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
+            formControlName="comision_hogar"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('comision_hogar')"
+            placeholder="0.20"
+          />
+          <div *ngIf="tieneCampoError('comision_hogar')" class="mensaje-error">
+            {{ obtenerMensajeError('comision_hogar') }}
+          </div>
+        </div>
+
+        <div class="campo-grupo">
+          <label for="comision_vehiculo" class="campo-etiqueta">Vehículo</label>
+          <input
+            id="comision_vehiculo"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
+            formControlName="comision_vehiculo"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('comision_vehiculo')"
+            placeholder="0.15"
+          />
+          <div *ngIf="tieneCampoError('comision_vehiculo')" class="mensaje-error">
+            {{ obtenerMensajeError('comision_vehiculo') }}
+          </div>
+        </div>
+
+        <div class="campo-grupo">
+          <label for="comision_copropiedad" class="campo-etiqueta">Copropiedad</label>
+          <input
+            id="comision_copropiedad"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
+            formControlName="comision_copropiedad"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('comision_copropiedad')"
+            placeholder="0.18"
+          />
+          <div *ngIf="tieneCampoError('comision_copropiedad')" class="mensaje-error">
+            {{ obtenerMensajeError('comision_copropiedad') }}
+          </div>
+        </div>
+
+        <div class="campo-grupo">
+          <label for="comision_otro" class="campo-etiqueta">Otro</label>
+          <input
+            id="comision_otro"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
+            formControlName="comision_otro"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('comision_otro')"
+            placeholder="0.12"
+          />
+          <div *ngIf="tieneCampoError('comision_otro')" class="mensaje-error">
+            {{ obtenerMensajeError('comision_otro') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sobrecomisiones -->
+    <div class="seccion-formulario">
+      <div class="seccion-header">
+        <div class="seccion-icono">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3 class="seccion-titulo">Sobrecomisiones</h3>
+      </div>
+      <p class="seccion-descripcion">Porcentajes adicionales de comisión por tipo de póliza</p>
+      
+      <div class="campos-grid">
+        <div class="campo-grupo">
+          <label for="sobrecomision_hogar" class="campo-etiqueta">Hogar</label>
+          <input
+            id="sobrecomision_hogar"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
+            formControlName="sobrecomision_hogar"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('sobrecomision_hogar')"
+            placeholder="0.05"
+          />
+          <div *ngIf="tieneCampoError('sobrecomision_hogar')" class="mensaje-error">
+            {{ obtenerMensajeError('sobrecomision_hogar') }}
+          </div>
+        </div>
+
+        <div class="campo-grupo">
+          <label for="sobrecomision_vehiculo" class="campo-etiqueta">Vehículo</label>
+          <input
+            id="sobrecomision_vehiculo"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
+            formControlName="sobrecomision_vehiculo"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('sobrecomision_vehiculo')"
+            placeholder="0.02"
+          />
+          <div *ngIf="tieneCampoError('sobrecomision_vehiculo')" class="mensaje-error">
+            {{ obtenerMensajeError('sobrecomision_vehiculo') }}
+          </div>
+        </div>
+
+        <div class="campo-grupo">
+          <label for="sobrecomision_copropiedad" class="campo-etiqueta">Copropiedad</label>
+          <input
+            id="sobrecomision_copropiedad"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
+            formControlName="sobrecomision_copropiedad"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('sobrecomision_copropiedad')"
+            placeholder="0.03"
+          />
+          <div *ngIf="tieneCampoError('sobrecomision_copropiedad')" class="mensaje-error">
+            {{ obtenerMensajeError('sobrecomision_copropiedad') }}
+          </div>
+        </div>
+
+        <div class="campo-grupo">
+          <label for="sobrecomision_otro" class="campo-etiqueta">Otro</label>
+          <input
+            id="sobrecomision_otro"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
+            formControlName="sobrecomision_otro"
+            class="campo-input"
+            [class.campo-error]="tieneCampoError('sobrecomision_otro')"
+            placeholder="0.01"
+          />
+          <div *ngIf="tieneCampoError('sobrecomision_otro')" class="mensaje-error">
+            {{ obtenerMensajeError('sobrecomision_otro') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="formulario-acciones" *ngIf="!soloLectura">
+      <button
+        type="button"
+        class="btn btn-secundario"
+        (click)="alCancelar()"
+        [class.disabled]="botonCancelarDeshabilitado"
+        *ngIf="mostrarCancelar"
+      >
+        Cancelar
+      </button>
+      
+      <button
+        type="submit"
+        class="btn btn-primario"
+        [class.disabled]="botonGuardarDeshabilitado"
+        [class.btn-exito]="guardadoExitoso"
+      >
+        <span *ngIf="enviando" class="spinner"></span>
+        <span *ngIf="guardadoExitoso" class="icono-exito">✓</span>
+        {{ 
+          guardadoExitoso ? 'Guardado!' : 
+          enviando ? 'Guardando...' : 
+          (esModoEdicion ? 'Actualizar' : 'Crear') 
+        }}
+      </button>
+    </div>
+  </form>
+</div>

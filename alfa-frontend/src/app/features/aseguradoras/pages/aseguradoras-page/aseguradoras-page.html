@@ -19,12 +19,39 @@
     </div>
     
     <div class="acciones-pagina">
-      <button class="boton-accion boton-primario">
+      <button 
+        class="boton-accion boton-primario"
+        [class.disabled]="botonAgregarDeshabilitado"
+        (click)="abrirFormularioCrear()"
+      >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
         </svg>
         Agregar Aseguradora
       </button>
+    </div>
+  </div>
+
+  <!-- Mensajes de éxito y error -->
+  <div class="mensajes-container" *ngIf="mensajeExito || mensajeError">
+    <div 
+      class="mensaje mensaje-exito" 
+      *ngIf="mensajeExito"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+      {{ mensajeExito }}
+    </div>
+    
+    <div 
+      class="mensaje mensaje-error" 
+      *ngIf="mensajeError"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+      {{ mensajeError }}
     </div>
   </div>
 
@@ -35,9 +62,22 @@
       [configuracion]="configuracionTabla"
       [datos]="datosAseguradoras"
       [cargando]="cargandoTabla"
+      [eliminandoElementoId]="eliminandoAseguradoraId"
       mensajeSinDatos="No hay aseguradoras disponibles"
       (accionFila)="manejarAccionFila($event)"
     ></app-tabla-dinamica>
+  </div>
+
+  <!-- Modal del formulario -->
+  <div class="modal-overlay" *ngIf="mostrarFormulario" (click)="cerrarFormulario()">
+    <div class="modal-contenido" (click)="$event.stopPropagation()">
+      <app-formulario-aseguradora
+        #formularioAseguradora
+        [aseguradora]="aseguradoraSeleccionada"
+        (guardar)="guardarAseguradora($event)"
+        (cancelar)="cerrarFormulario()"
+      ></app-formulario-aseguradora>
     </div>
+  </div>
   </div>
 </div>
